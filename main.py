@@ -8,47 +8,7 @@ import subprocess
 subprocess.call(["cython", "-a", "functions.pyx"])
 
 import functions
-
-EMPTY_BOARD = np.array([
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0]],
-    dtype=np.int8
-)
-
-# Easy board
-easy_board = np.array([
-    [5, 3, 0, 0, 7, 0, 0, 0, 0],
-    [6, 0, 0, 1, 9, 5, 0, 0, 0],
-    [0, 9, 8, 0, 0, 0, 0, 6, 0],
-    [8, 0, 0, 0, 6, 0, 0, 0, 3],
-    [4, 0, 0, 8, 0, 3, 0, 0, 1],
-    [7, 0, 0, 0, 2, 0, 0, 0, 6],
-    [0, 6, 0, 0, 0, 0, 2, 8, 0],
-    [0, 0, 0, 4, 1, 9, 0, 0, 5],
-    [0, 0, 0, 0, 8, 0, 0, 7, 9]],
-    dtype=np.int8
-)
-
-# Hard board
-hard_board = np.array([
-    [0, 0, 0, 0, 0, 0, 2, 0, 0],
-    [0, 8, 0, 0, 0, 7, 0, 9, 0],
-    [6, 0, 2, 0, 0, 0, 5, 0, 0],
-    [0, 7, 0, 0, 6, 0, 0, 0, 0],
-    [0, 0, 0, 9, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 2, 0, 0, 4, 0],
-    [0, 0, 5, 0, 0, 0, 6, 0, 3],
-    [0, 9, 0, 4, 0, 0, 0, 7, 0],
-    [0, 0, 6, 0, 0, 0, 0, 0, 0]],
-    dtype=np.int8
-)
+from functions import get_board_to_play
 
 BOARD_CONSTANT = 3
 PRINT_INTERMEDIATE = False
@@ -83,10 +43,10 @@ def pretty_print(board, original_board):
     print_row_of_dashes()
     print('')
 
-board_to_solve = hard_board
-pretty_print(board_to_solve, original_board=board_to_solve)
+board_to_play = get_board_to_play()
+pretty_print(board_to_play, original_board=board_to_play)
 tic = time()
-solved = functions.run_backtrack(board_to_solve)
+solved = functions.run_backtrack()
 tac = time()
 print(f'Done in {tac-tic:1.5f}s')
-pretty_print(solved, original_board=board_to_solve)
+pretty_print(solved, original_board=board_to_play)
