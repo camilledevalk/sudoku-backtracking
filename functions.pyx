@@ -1,6 +1,7 @@
 # cython: language_level=2
 # cython: profile=True
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+# cython: boundscheck=False
+# define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
 cimport numpy as cnp
 import numpy as np
@@ -129,7 +130,6 @@ cdef bint check_valid_collection(cnp.int8_t[:,:] board,
     :return: boolean value that indicates if the collection that was checked is valid (no duplicate numbers)
     '''
     cdef list appeared_numbers = [0]*BOARD_CONSTANT**2
-    #cdef Py_ssize_t i, j
     cdef Py_ssize_t i, row, col
     cdef cnp.int8_t entry
 
@@ -178,6 +178,7 @@ cdef cnp.int8_t[:,:] backtrack(cnp.int8_t[:,:] board):
     cdef Py_ssize_t row, col
     cdef (Py_ssize_t, Py_ssize_t) current_entry
     cdef cnp.int8_t[:,:] updated_board
+    cdef cnp.int8_t[:] row_board
     cdef cnp.int8_t entry, possible_value
     for row in range(len(board)):
         row_board = board[row]
