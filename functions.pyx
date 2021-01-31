@@ -62,6 +62,32 @@ cdef cnp.int8_t[:,:] diagonal_board = np.array([
     dtype=np.int8
 )
 
+cdef cnp.int8_t[:,:] jigsaw_board = np.array([
+    [0, 0, 0, 0, 0, 0, 2, 0, 0],
+    [2, 6, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 6, 0, 0, 4],
+    [8, 0, 6, 4, 0, 7, 0, 3, 1],
+    [0, 0, 0, 0, 0, 4, 9, 0, 0],
+    [6, 0, 0, 0, 0, 2, 0, 5, 0],
+    [5, 0, 2, 7, 0, 0, 1, 8, 6],
+    [9, 3, 0, 0, 8, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 6, 0, 0]],
+    dtype=np.int8
+)
+
+cdef Py_ssize_t[:,:,:] JIGSAW_INDICES_COLLECTION
+JIGSAW_INDICES_COLLECTION = np.array([
+    [[0,0], [0,1], [0,2], [0,3], [1,0], [1,1], [1,2], [2,1], [2,2]],
+    [[0,4], [0,5], [0,6], [0,7], [1,3], [1,4], [1,5], [1,6], [1,7]],
+    [[2,0], [2,3], [3,0], [3,1], [3,2], [3,3], [4,0], [4,1], [4,3]],
+    [[2,4], [2,5], [2,6], [3,4], [3,5], [3,6], [3,7], [4,4], [4,5]],
+    [[0,8], [1,8], [2,7], [2,8], [3,8], [4,6], [4,7], [4,8], [5,6]],
+    [[4,2], [5,0], [5,1], [5,2], [5,3], [6,0], [6,1], [6,2], [7,0]],
+    [[5,4], [5,5], [6,3], [6,4], [6,5], [7,2], [7,3], [7,4], [7,5]],
+    [[8,0], [7,1], [8,1], [8,2], [8,3], [8,4], [8,5], [7,6], [8,6]],
+    [[5,7], [5,8], [6,6], [6,7], [6,8], [7,7], [7,8], [8,7], [8,8]]
+])
+
 cdef Py_ssize_t BOARD_CONSTANT = 3
 
 ## Preperation
@@ -108,34 +134,40 @@ cdef find_collections_to_check(Py_ssize_t row,
     collections.append(colwise)
 
     # squarewise
-    row_start = BOARD_CONSTANT * (row // BOARD_CONSTANT)
-    row_end = row_start + BOARD_CONSTANT
-    col_start = BOARD_CONSTANT * (col // BOARD_CONSTANT)
-    col_end = col_start + BOARD_CONSTANT
     cdef Py_ssize_t[:,:] squarewise
-    squarewise = collection(row_start, row_end, col_start, col_end)
-    collections.append(squarewise)
+    if SQUARES:
+        row_start = BOARD_CONSTANT * (row // BOARD_CONSTANT)
+        row_end = row_start + BOARD_CONSTANT
+        col_start = BOARD_CONSTANT * (col // BOARD_CONSTANT)
+        col_end = col_start + BOARD_CONSTANT
+        squarewise = collection(row_start, row_end, col_start, col_end)
+        collections.append(squarewise)
 
     # diagonalwise
-    cdef Py_ssize_t k, row_, col_
+    cdef Py_ssize_t k
     cdef Py_ssize_t[:,:] diagonalwise0, diagonalwise1
     if DIAGONAL:
         if (row == col):  # If the entry is on the diagonal upper-left<-->lower-right
             result = np.zeros(shape=(BOARD_CONSTANT ** 2, 2), dtype=int)
             for k in range(BOARD_CONSTANT**2):
-                row_ = k
-                col_ = k
-                result[k] = (row_, col_)
+                result[k] = (k, k)
             diagonalwise0 = result.copy()
             collections.append(diagonalwise0)
         if (row == BOARD_CONSTANT**2-1-col):
             result = np.zeros(shape=(BOARD_CONSTANT ** 2, 2), dtype=int)
             for k in range(BOARD_CONSTANT**2):
-                row_ = k
-                col_ = BOARD_CONSTANT**2-1-k
-                result[k] = (row_, col_)
+                result[k] = (k, BOARD_CONSTANT**2-1-k)
             diagonalwise1 = result.copy()
             collections.append(diagonalwise1)
+
+    # jigsawwise
+    cdef Py_ssize_t[:,:] jigsaw_indices
+    if JIGSAW:
+        for k in range(BOARD_CONSTANT**2):
+            jigsaw_indices = JIGSAW_INDICES_COLLECTION[k]
+            if [row, col] in np.asarray(jigsaw_indices):
+                jigsawwise = jigsaw_indices
+                collections.append(jigsawwise)
 
     return collections
 
@@ -147,8 +179,10 @@ cdef dict all_collections():
             collections_to_check[(row,col)] = find_collections_to_check(row,col)
     return collections_to_check
 
-board_to_play = diagonal_board.copy()
-cdef bint DIAGONAL = True
+board_to_play = jigsaw_board.copy()
+cdef bint DIAGONAL = False
+cdef bint JIGSAW = True
+cdef bint SQUARES = False
 cpdef cnp.int8_t[:,:] get_board_to_play():
     return board_to_play.copy()
 
